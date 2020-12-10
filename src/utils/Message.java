@@ -2,13 +2,15 @@ package utils;
 
 public class Message {
 	
-	int id;
+	int idProd;
+	int idMess;
 	
-	public Message (int id) {
-		this.id = id;
+	public Message (int idProd, int idMess) {
+		this.idProd = idProd;
+		this.idMess = idMess;
 	}
 	
 	public void compute() {
-		System.out.println("Message : id = " + id);
+		System.out.println("Message " + idMess + " produced by Producer " + idProd);
 	}
 }

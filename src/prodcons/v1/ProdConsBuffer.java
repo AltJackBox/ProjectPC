@@ -3,14 +3,14 @@ package prodcons.v1;
 import utils.IProdConsBuffer;
 import utils.Message;
 
-public class ProdConsBuffer implements IProdConsBuffer{
-	
-	int bufferSz;
-	Message buffer[];
-	int in, out;
-	int nmess;
-	int total;
-	
+public class ProdConsBuffer implements IProdConsBuffer {
+
+	private int bufferSz;
+	private Message buffer[];
+	private int in, out;
+	private int nmess;
+	private int total;
+
 	public ProdConsBuffer(int bufferSz) {
 		this.bufferSz = bufferSz;
 		buffer = new Message[bufferSz];
@@ -22,7 +22,7 @@ public class ProdConsBuffer implements IProdConsBuffer{
 
 	@Override
 	public synchronized void put(Message m) throws InterruptedException {
-		if (nmess >= bufferSz) {
+		while (nmess >= bufferSz) {
 			wait();
 		}
 		buffer[in] = m;
@@ -30,19 +30,19 @@ public class ProdConsBuffer implements IProdConsBuffer{
 		in %= bufferSz;
 		total++;
 		nmess++;
-		notify();
+		notifyAll();
 	}
 
 	@Override
 	public synchronized Message get() throws InterruptedException {
-		if (nmess < 0) {
+		while (nmess <= 0) {
 			wait();
 		}
 		Message m = buffer[out];
 		out += 1;
 		out %= bufferSz;
 		nmess--;
-		notify();
+		notifyAll();
 		return m;
 	}
 

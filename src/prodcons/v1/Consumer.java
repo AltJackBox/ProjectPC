@@ -19,12 +19,11 @@ public class Consumer extends Thread{
 	public void run() {
 		try {
 			while (true) {
-				sleep(consTime);
 				consume().compute();
+				sleep(consTime);
 			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 }
