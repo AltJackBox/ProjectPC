@@ -63,6 +63,12 @@ public class TestProdCons {
 				e.printStackTrace();
 			}
 		}
+		try {
+			Thread.sleep(consTime); // Laisse le temps au consommateur de consommer le message
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}//
 		for (int i = 0; i < nCons; i++) {
 			tabCons[i].interrupt();
 		}
