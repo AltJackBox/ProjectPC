@@ -56,4 +56,10 @@ public class ProdConsBuffer implements IProdConsBuffer {
 		return total;
 	}
 
+	@Override
+	public Message[] get(int k) throws InterruptedException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

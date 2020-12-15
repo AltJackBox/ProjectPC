@@ -1,4 +1,4 @@
-package prodcons.v1;
+package prodcons.v2;
 
 import utils.Message;
 
@@ -19,7 +19,7 @@ public class Consumer extends Thread{
 	public void run() {
 		try {
 			while (true) {
-				consume().compute();				
+				consume().compute();
 				sleep(consTime);
 			}
 		} catch (InterruptedException e) {

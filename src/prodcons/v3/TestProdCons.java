@@ -1,6 +1,7 @@
-package prodcons.v1;
+package prodcons.v3;
 
 import java.io.FileInputStream;
+
 
 
 import java.io.FileNotFoundException;
@@ -9,9 +10,9 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
 import java.util.Random;
 
-import prodcons.v1.Consumer;
-import prodcons.v1.ProdConsBuffer;
-import prodcons.v1.Producer;
+import prodcons.v3.Consumer;
+import prodcons.v3.ProdConsBuffer;
+import prodcons.v3.Producer;
 import utils.AllocId;
 
 public class TestProdCons {
@@ -27,13 +28,14 @@ public class TestProdCons {
 		int consTime = Integer.parseInt(properties.getProperty("consTime"));
 		int minProd = Integer.parseInt(properties.getProperty("minProd"));
 		int maxProd = Integer.parseInt(properties.getProperty("maxProd"));
-
+		int nGet = Integer.parseInt(properties.getProperty("nGet"));
+		
 		Consumer[] tabCons = new Consumer[nCons];
 		Producer[] tabProd = new Producer[nProd];
 
 		ProdConsBuffer pcb = new ProdConsBuffer(bufSz);
 		for (int i = 0; i < nCons; i++) {
-			tabCons[i] = new Consumer(pcb, consTime);
+			tabCons[i] = new Consumer(pcb, consTime, nGet);
 		}
 		for (int i = 0; i < nProd; i++) {
 			tabProd[i] = new Producer(pcb, minProd, maxProd, prodTime, i);
@@ -62,7 +64,7 @@ public class TestProdCons {
 		while (pcb.nmsg() > 0) {
 			Thread.sleep(10);
 		}
-		Thread.sleep(consTime); // Laisse le temps au consommateur de consommer le message
+		Thread.sleep(nGet*consTime); // Laisse le temps au consommateur de consommer le message
 		long endTime = System.nanoTime();
 		for (int i = 0; i < nCons; i++) {
 			tabCons[i].interrupt();

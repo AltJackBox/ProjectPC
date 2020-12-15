@@ -8,4 +8,5 @@
 	<entry key="consTime">10</entry>
 	<entry key="minProd">5</entry>
 	<entry key="maxProd">100</entry>
+	<entry key="nGet">5</entry>
 </properties>

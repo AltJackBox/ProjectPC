@@ -1,6 +1,7 @@
-package prodcons.v1;
+package prodcons.v2;
 
 import java.io.FileInputStream;
+
 
 
 import java.io.FileNotFoundException;
@@ -9,9 +10,9 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
 import java.util.Random;
 
-import prodcons.v1.Consumer;
-import prodcons.v1.ProdConsBuffer;
-import prodcons.v1.Producer;
+import prodcons.v2.Consumer;
+import prodcons.v2.ProdConsBuffer;
+import prodcons.v2.Producer;
 import utils.AllocId;
 
 public class TestProdCons {

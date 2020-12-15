@@ -15,6 +15,12 @@ public interface IProdConsBuffer {
 	* Returns the number of messages currently available in
 	* the prod-cons buffer
 	**/
+	
+	/**
+	* Retrieve n consecutive messages from the prodcons buffer
+	**/
+	public Message[] get(int k) throws InterruptedException;
+	
 	public int nmsg();
 	/**
 	* Returns the total number of messages that have
