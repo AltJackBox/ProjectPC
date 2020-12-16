@@ -62,4 +62,10 @@ public class ProdConsBuffer implements IProdConsBuffer {
 		return null;
 	}
 
+	@Override
+	public void put(Message m, int n) throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

@@ -9,7 +9,8 @@ import utils.Message;
 public class ProdConsBuffer implements IProdConsBuffer {
 
 	private int bufferSz;
-	private Message buffer[];
+	private Message[] buffer;
+	private Message[] _interruptedMessages;
 	private int in, out;
 	private int nmess;
 	private int total;
@@ -65,9 +66,13 @@ public class ProdConsBuffer implements IProdConsBuffer {
 	public int totmsg() {
 		return total;
 	}
+	
+	public Message[] _getInterruptedMessages() {
+		return _interruptedMessages;
+	}
 
 	@Override
-	public Message[] get(int k) throws InterruptedException {
+	public Message[] get(int k){
 		int i = 0;
 		Message[] tabMess = new Message[k];
 		try {
@@ -83,10 +88,18 @@ public class ProdConsBuffer implements IProdConsBuffer {
 				i++;
 				wput.release();
 			}
+		}catch (InterruptedException e) {
+			_interruptedMessages = tabMess;
 		} finally {
 			multipleGet.release();
 		}
 		return tabMess;
+	}
+
+	@Override
+	public void put(Message m, int n) throws InterruptedException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -15,9 +15,11 @@ public class Consumer extends Thread {
 	}
 
 	public void run() {
+		Message[] getRes;
 		try {
 			while (true) {
-				for (Message m : pcb.get(nGet)) {
+				getRes = pcb.get(nGet);
+				for (Message m : getRes) {
 					if (m != null) {
 						System.out.print("Consumer id : " + getId() + " ");
 						m.compute();
@@ -26,6 +28,12 @@ public class Consumer extends Thread {
 				}
 			}
 		} catch (InterruptedException e) {
+			for (Message m : pcb._getInterruptedMessages()) {
+				if (m != null) {
+					System.out.print("Consumer id : " + getId() + " ");
+					m.compute();
+				}
+			}
 		}
 	}
 }
