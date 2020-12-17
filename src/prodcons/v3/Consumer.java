@@ -2,15 +2,12 @@ package prodcons.v3;
 
 import utils.Message;
 
-/*
- * Classe consumer
- */
 public class Consumer extends Thread {
 
 	ProdConsBuffer pcb;
 	int consTime;
 	/*
-	 * Nombre de message a get
+	 * Nombre de messages à consommer
 	 */
 	int nGet;
 
@@ -21,12 +18,14 @@ public class Consumer extends Thread {
 	}
 
 	/*
-	 * Le consumer, jusqu'a son interuption, va lire nGet messages dans le ProdConsBuffer 
-	 * et va les lire (methode compute de message)
-	 * Cependant, il est possible que le consummer s'attendent a lire nGet message mais 
-	 * seul n messages vont être produit (n < nGet). 
-	 * Au quel cas, ce consummer pourrait être interronpu lors de la lecture de nGet messages (get)
-	 * Auquel cas, il va, après être intépondu, traiter les n messages lus
+	 * Le consumer, jusqu'à son interuption, va lire nGet messages dans le ProdConsBuffer 
+	 * et va les afficher
+	 * Cependant, il est possible que les consummers s'attendent a lire nGet message mais 
+	 * seul n messages vont être produits (n < nGet), cela arrive nottament lorsque tous les 
+	 * messages ont été lus, le programme de test interromp alors tous les consumers
+	 * Lorsque cela arrive, un consumer peut être interrompu alors qu'il n'a pas pu encore lire nGet
+	 * messages
+	 * Auquel cas, il va, après être interrompu, traiter les n messages qui ont déjà été lus
 	 */
 	public void run() {
 		Message[] getRes;

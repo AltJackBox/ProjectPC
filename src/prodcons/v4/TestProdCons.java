@@ -32,7 +32,7 @@ public class TestProdCons {
 		int maxProd = Integer.parseInt(properties.getProperty("maxProd"));
 		
 		/*
-		 * Initialisation des producer et consumer
+		 * Initialisation des producers et des consumers
 		 */
 		Consumer[] tabCons = new Consumer[nCons];
 		Producer[] tabProd = new Producer[nProd];
@@ -45,11 +45,11 @@ public class TestProdCons {
 			tabProd[i] = new Producer(pcb, minProd, maxProd, prodTime, i, nCons);
 		}
 		/*
-		 * on run les thread aléatoirement
+		 * on lance les thread aléatoirement
 		 */
 		
-		int startCons = 0; //nb producer run
-		int startProd = 0; //nb consumer run
+		int startCons = 0; //Nombre de consumers lancés
+		int startProd = 0; //Nombre de producers lancés
 		while (true) {
 			if ((startCons < nCons) && (startProd < nProd)) {
 				if (new Random().nextBoolean()) {
@@ -66,30 +66,29 @@ public class TestProdCons {
 			}
 		}
 		/*
-		 * on attend que les producer ont crée tout leur message
+		 * on attend que les producers aient créé tous les messages
 		 */
 		for (int i = 0; i < nProd; i++) {
 			tabProd[i].join();
 		}
 		/*
-		 * tant qu'il reste des messages a traiter dans le buffer, on attent que les messages soient consommés
+		 * tant qu'il reste des messages à traiter dans le buffer, on attend que les messages 
+		 * soient consommés
 		 */
 		while (pcb.nmsg() > 0) {
 			Thread.sleep(10);
 		}
 		/*
-		 * Lors que le dernier message est lu dans le buffer, on attend que le consummer qui l'a lu finisse le traitement
+		 * Lorsque le dernier message est lu dans le buffer, on attend que le dernier consummer qui 
+		 * l'ai lu finisse le traitement du message
 		 */
 		Thread.sleep(consTime); 
 		/*
-		 * on arrete les consummers
+		 * on arrête les consummers
 		 */
 		for (int i = 0; i < nCons; i++) {
 			tabCons[i].interrupt();
 		}
-		/*
-		 * Affichage final avec le sperfommances
-		 */
 		System.out.println("Tous les messages ont été transmis");
 	}
 }

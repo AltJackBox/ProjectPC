@@ -15,11 +15,11 @@ public class ProdConsBuffer implements IProdConsBuffer {
 	 */
 	private int in, out; 
 	/*
-	 * nombre de message actuel dans le buffer
+	 * nombre de messages actuellement dans le buffer
 	 */
 	private int nmess;
 	/*
-	 * nombre de message totale écrit dans le buffer
+	 * nombre de messages total écrits dans le buffer depuis sa création
 	 */
 	private int total;
 
@@ -46,7 +46,7 @@ public class ProdConsBuffer implements IProdConsBuffer {
 		total++;
 		nmess++;
 		/*
-		 * on notify tout le monde, producer et consummer, qu'un message a été écrit
+		 * on notifie tout le monde, producer et consumer, qu'un message a été écrit
 		 */
 		notifyAll();
 	}
@@ -64,7 +64,7 @@ public class ProdConsBuffer implements IProdConsBuffer {
 		out %= bufferSz;
 		nmess--;
 		/*
-		 * on notify tout le monde, producer et consummer, qu'un message a été lu
+		 * on notifie tout le monde, producer et consummer, qu'un message a été lu
 		 */
 		notifyAll();
 		return m;

@@ -12,49 +12,47 @@ public class ProdConsBuffer implements IProdConsBuffer {
 	private int bufferSz;
 	private Message buffer[];
 	/*
-	 * indice de position de lecture et d'écriture dans le buffer
+	 * indices de position de lecture et d'écriture dans le buffer
 	 */
 	private int in, out;
 	/*
-	 * nombre de message actuel dans le buffer
+	 * nombre de messages présents dans le buffer
 	 */
 	private int nmess;
 	/*
-	 * nombre de message totale écrit dans le buffer
+	 * nombre de messages total écrits dans le buffer depuis sa création
 	 */
 	private int total;
 	
-	private int nMultiplePut; //Nombre de copy du message totale
-	private int nMultipleGet; //Nombre de copy du message lue
+	private int nMultiplePut; //Nombre total de copies du message produites par un producer
+	private int nMultipleGet; //Nombre total de lectures du message par un consumer
 
 	/*
-	 * Semaphore qui met en attente les poducer si le buffer est plein
+	 * Semaphore qui met en attente les poducers si le buffer est plein
 	 */
 	private Semaphore wput;
 	/*
-	 * Semaphore qui met en attente les consumer si le buffer est vide
+	 * Semaphore qui met en attente les consumers si le buffer est vide
 	 */
 	private Semaphore wget;
 	
 	/*
-	 * Lorsqu'un producter a produit les k messages,
-	 * il attend dans wMultiplePut que tout les messages qu'il a produit
-	 * soit lut
+	 * Lorsqu'un producer a produit les k messages,
+	 * il attend dans wMultiplePut que tous les messages qu'il a produit
+	 * soient lus
 	 */
 	private Semaphore wMultiplePut;
 	
 	/*
-	 * Lorsqu'un consumer a consumer 1 message,
-	 * il attend dans wMultipleGet que tout les autres messages 
-	 * soit lues
+	 * Lorsqu'un consumer a lu 1 message,
+	 * il attend dans wMultipleGet que toutes les autres copies du message
+	 * soient lues par d'autres consumers
 	 */
 	private Semaphore wMultipleGet;
 
 	/*
-	 * Semaphore pour gère l'accès aux buffer pour les consumers,
-	 * 1 seul lit le buffer à la fois
-	 * De plus, le consumer ne libère pas la ressource tant qu'il n'a pas lu 
-	 * tout les messages consécutifs qu'il devait lire
+	 * Semaphore pour gérer l'accès au buffer par les consumers,
+	 * 1 seul consumer doit pouvoir lire le buffer à la fois
 	 */
 	private Semaphore multipleGet;
 	
@@ -62,7 +60,7 @@ public class ProdConsBuffer implements IProdConsBuffer {
 	 * Semaphore pour gère l'accès aux buffer pour les producer,
 	 * 1 seul lit le buffer à la fois
 	 * De plus, le producer ne libère pas la ressource tant qu'il n'a pas produit 
-	 * tout les messages consécutifs qu'il devait produire
+	 * toutes les copies du message qu'il doit produire
 	 */
 	
 	private Semaphore multiplePut;
@@ -86,17 +84,16 @@ public class ProdConsBuffer implements IProdConsBuffer {
 
 	@Override
 	public void put(Message m) throws InterruptedException {
-		//
 	}
 
 	@Override
 	public Message get() throws InterruptedException {
 		Message mess;
 		try {
-			multipleGet.acquire();// le consumer acquire la ressource
+			multipleGet.acquire();// le consumer acquiert la ressource
 			while (nmess <= 0) {
 				/*
-				 * Si il n'y as plus de message, le consummer attend, 
+				 * Si il n'y a plus de message dans le buffer, le consummer attend
 				 */
 				multipleGet.release();
 				wget.acquire();
@@ -108,22 +105,23 @@ public class ProdConsBuffer implements IProdConsBuffer {
 			nmess--;
 			nMultipleGet++;
 			/*
-			 * Après avoir lut un message, il release un producer qui a été mis en attente car le buffer était plein.
+			 * Après avoir lu un message, il libère un producer qui a été mis en attente car 
+			 * le buffer était plein.
 			 */
 			wput.release();
 		} finally {
 			
 			if (nMultipleGet < nMultiplePut) {
 				/*
-				 * Si les nMulptipleGet messages n'ont pas été tout lut,
+				 * Si les nMulptipleGet messages n'ont pas été tous lus,
 				 * le consummer attend que ce soit le cas
 				 */
 				multipleGet.release();
 				wMultipleGet.acquire();
 			} else {
 				/*
-				 * Sinon, c'est que le consumer a lut le dernier message,
-				 * donc il libère tout les consummers
+				 * Sinon, c'est que le consumer a lu le dernier message,
+				 * donc il libère tout les consummers bloqués
 				 * et libère le producer qui est en attente
 				 */
 				wMultipleGet.release(nMultiplePut - 1);
@@ -152,21 +150,21 @@ public class ProdConsBuffer implements IProdConsBuffer {
 	@Override
 	public void put(Message m, int n) throws InterruptedException {
 		try {
-			multiplePut.acquire(); // le producer acquire la ressource
+			multiplePut.acquire(); // le producer acquiert la ressource
 			/*
 			 * Initilisation des variables,
-			 * n copy 
-			 * 0 lues
+			 * n copies du message à produire
+			 * 0 actuellement lues
 			 */
 			nMultiplePut = n; 
 			nMultipleGet = 0;
 			while (n > 0) {
 				while (nmess >= bufferSz) {
 					/*
-					 * Si il n'y as plus de place, le producer attend, 
-					 * mais sans liberer la ressources, car il ne doit pas
+					 * Si il n'y as plus de place dans le buffer, le producer attend, 
+					 * mais sans liberer la ressource, car il ne doit pas
 					 * se faire doubler par un autre producer.
-					 * Il doit ecrire n copies consécutives
+					 * Il doit écrire n copies consécutives du message
 					 */
 					wput.acquire();
 				}
@@ -176,7 +174,8 @@ public class ProdConsBuffer implements IProdConsBuffer {
 				total++;
 				nmess++;
 				/*
-				 * Après avoir ecrit un message, il release un consumer qui a été mis en attente car le buffer était vide.
+				 * Après avoir écrit un message, il release un consumer qui a été mis 
+				 * en attente car le buffer était vide.
 				 */
 				wget.release();
 				n--;
@@ -185,8 +184,8 @@ public class ProdConsBuffer implements IProdConsBuffer {
 			/*
 			 * Puis il se met en attente. Il attend que 
 			 * toutes les copies écrites soit lues
-			 * Il ne li_bère pas la ressources, car sinon un autre producer pourrait
-			 * ecrire.
+			 * Il ne libère pas la ressource, car sinon un autre producer pourrait
+			 * écrire avant que tous les messages produits n'aient été consommés
 			 */
 			wMultiplePut.acquire();
 			multiplePut.release();

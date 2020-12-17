@@ -1,9 +1,5 @@
 package prodcons.v4;
 
-
-/*
- * Classe consumer
- */
 public class Consumer extends Thread{
 	
 	ProdConsBuffer pcb;
@@ -16,8 +12,8 @@ public class Consumer extends Thread{
 
 
 	/*
-	 * Le consumer, jusqu'a son interuption, va lire un message dans le ProdConsBuffer 
-	 * et va le lire lire (methode compute de message)
+	 * Le consumer, jusqu'à son interruption, va lire des messages dans le buffer
+	 * et va les afficher
 	 */
 	public void run() {
 		try {

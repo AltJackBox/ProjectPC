@@ -14,45 +14,46 @@ public class ProdConsBuffer implements IProdConsBuffer {
 	private int bufferSz;
 	private Message buffer[];
 	/*
-	 * indice de position de lecture et d'écriture dans le buffer
+	 * indices de position de lecture et d'écriture dans le buffer
 	 */
 	private int in, out;
 	/*
-	 * nombre de message actuel dans le buffer
+	 * nombre de messages présents dans le buffer
 	 */
 	private int nmess;
 	/*
-	 * nombre de message totale écrit dans le buffer
+	 * nombre de messages total écrits dans le buffer depuis sa création
 	 */
 	private int total;
 	
 	/*
-	 * tableau des messages lus par un consumer, mais qui n'ont pas été renvoyés car le consummer a été intérrompu
-	 * Ce cas arrive si un consummer attend X messages, mais les producer ne vont porduire que Y messages, avec Y < N.
-	 * Au quel cas, le consummer va attendre le reste des messages, qui n'existent pas, et va se faire interompre par le main.
-	 * Les Y messages lu vont pouvoir être récuperer et traité via ce buffer.
+	 * tableau des messages lus par un consumer, mais qui n'ont pas été renvoyés car le consummer a 
+	 * été intérrompu. Ce cas arrive si un consummer attend X messages, mais que les producer ne 
+	 * vont produire que Y messages, avec Y < N.
+	 * Au quel cas, le consummer va attendre le reste des messages, qui n'existent pas, et va se 
+	 * faire interompre par le main
+	 * Les Y messages lus vont pouvoir être récuperés et traités via ce buffer.
 	 */
 	private Message[] _interruptedMessages;
 
 	/*
-	 * Semaphore pour gère l'accès aux buffer pour les producer,
-	 * 1 seul ecrit dans le buffer à la fois
+	 * Semaphore pour gère l'accès au buffer par les producer,
+	 * 1 seul producer doit pouvoir écrire dans le buffer à la fois
 	 */
 	private Semaphore mput;
 	
 	/*
-	 * Semaphore qui met en attente les poducer si le buffer est plein
+	 * Semaphore qui met en attente les producers si le buffer est plein
 	 */
 	private Semaphore wput;
 	/*
-	 * Semaphore qui met en attente les consumer si le buffer est vide
+	 * Semaphore qui met en attente les consumers si le buffer est vide
 	 */
 	private Semaphore wget;
+	
 	/*
-	 * Semaphore pour gère l'accès aux buffer pour les consumers,
-	 * 1 seul lit le buffer à la fois
-	 * De plus, le consumer ne libère pas la ressource tant qu'il n'a pas lu 
-	 * tout les messages consécutifs qu'il devait lire
+	 * Semaphore pour gérer l'accès au buffer par les consumers,
+	 * 1 seul consumer doit pouvoir lire le buffer à la fois
 	 */
 	private Semaphore multipleGet;
 
@@ -72,10 +73,10 @@ public class ProdConsBuffer implements IProdConsBuffer {
 	@Override
 	public void put(Message m) throws InterruptedException {
 		try {
-			mput.acquire(); // le producer acquire la ressource
+			mput.acquire(); // le producer acquiert la ressource
 			while (nmess >= bufferSz) {
 				/*
-				 * Si le buffer est plein, il libère la ressources et se met en attente
+				 * Si le buffer est plein, il libère la ressource et se met en attente
 				 */
 				mput.release();
 				wput.acquire();
@@ -87,7 +88,8 @@ public class ProdConsBuffer implements IProdConsBuffer {
 			total++;
 			nmess++;
 			/*
-			 * Après avoir produit le message, il release un consumer qui a été mis en attente car le buffer était vide.
+			 * Après avoir produit le message, il libère un consumer qui a été mis en attente 
+			 * car le buffer était vide.
 			 */
 			wget.release();
 		} finally {
@@ -113,7 +115,7 @@ public class ProdConsBuffer implements IProdConsBuffer {
 		return total;
 	}
 	/*
-	 * Methode qui permet de recuperer les messages lu lors d'une interuption d'un consumer
+	 * Méthode qui permet de récupérer les messages lus lors de l'interruption d'un consumer
 	 */
 	public Message[] _getInterruptedMessages() {
 		return _interruptedMessages;
@@ -124,14 +126,14 @@ public class ProdConsBuffer implements IProdConsBuffer {
 		int i = 0;
 		Message[] tabMess = new Message[k];
 		try {
-			multipleGet.acquire();// le consumer acquire la ressource
+			multipleGet.acquire();// le consumer acquiert la ressource
 			while (i < k) {
 				while (nmess <= 0) {
 					/*
-					 * Si il n'y as plus de message, le consummer attend, 
+					 * Si il n'y a plus de message, le consummer attend, 
 					 * mais sans liberer la ressources, car il ne doit pas
 					 * se faire doubler par un autre consummer.
-					 * Il doit lire k messages consécutif
+					 * Il doit pouvoir lire k messages consécutifs
 					 */
 					wget.acquire();
 				}
@@ -141,14 +143,15 @@ public class ProdConsBuffer implements IProdConsBuffer {
 				nmess--;
 				i++;
 				/*
-				 * Après avoir lut un message, il release un pducer qui a été mis en attente car le buffer était plein.
+				 * Après avoir lu un message, il libère un producer qui a été mis en 
+				 * attente car le buffer était plein.
 				 */
 				wput.release();
 			}
 		}catch (InterruptedException e) {
 			/*
-			 * Si le consumer est interompu, il stock les messages qu'il a lu
-			 * afin qu'ils puissent êter traités sans être perdu
+			 * Si le consumer est interompu, il stocke les messages qu'il a lu
+			 * afin qu'ils puissent être traités sans être perdus
 			 */
 			_interruptedMessages = tabMess;
 		} finally {
