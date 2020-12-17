@@ -20,6 +20,9 @@ public class Producer extends Thread{
 	
 	public void run() {
 		try {
+			/*
+			 * tant que le producer n'as pas produit nbPro message, il continue de creer un message.
+			 */
 			while (nbProd > 0) {
 				Message m = new Message(id);
 				pcb.put(m, maxExempl);

@@ -16,14 +16,13 @@ public class Producer extends Thread{
 		this.id = id;
 	}
 
-	public void produce() throws InterruptedException {
-		pcb.put(new Message(id));
-	}
-	
 	public void run() {
 		try {
+			/*
+			 * tant que le producer n'as pas produit nbPro message, il continue de creer un message.
+			 */
 			while (nbProd > 0) {
-				produce();
+				pcb.put(new Message(id));
 				nbProd--;
 				sleep(prodTime);
 			}

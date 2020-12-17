@@ -1,26 +1,32 @@
 package prodcons.v4;
 
-import utils.Message;
 
-public class Consumer extends Thread {
-
+/*
+ * Classe consumer
+ */
+public class Consumer extends Thread{
+	
 	ProdConsBuffer pcb;
 	int consTime;
-
+	
 	public Consumer(ProdConsBuffer pcb, int consTime) {
-		this.pcb = pcb;
+		this.pcb= pcb;
 		this.consTime = consTime;
 	}
 
+
+	/*
+	 * Le consumer, jusqu'a son interuption, va lire un message dans le ProdConsBuffer 
+	 * et va le lire lire (methode compute de message)
+	 */
 	public void run() {
 		try {
 			while (true) {
-				Message m = pcb.get();
-				//System.out.println("Consumer id : " + getId());
-				m.compute();
+				pcb.get().compute();				
 				sleep(consTime);
 			}
 		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
 		}
 	}
 }

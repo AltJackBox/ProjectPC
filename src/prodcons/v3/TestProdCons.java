@@ -19,6 +19,9 @@ public class TestProdCons {
 
 	public static void main(String[] args)
 			throws InvalidPropertiesFormatException, FileNotFoundException, IOException, InterruptedException {
+		/*
+		 * on lit les options dans le fichier options.xml
+		 */
 		Properties properties = new Properties();
 		properties.loadFromXML(new FileInputStream("options.xml"));
 		int nProd = Integer.parseInt(properties.getProperty("nProd"));
@@ -30,6 +33,9 @@ public class TestProdCons {
 		int maxProd = Integer.parseInt(properties.getProperty("maxProd"));
 		int nGet = Integer.parseInt(properties.getProperty("nGet"));
 		
+		/*
+		 * Initialisation des producer et consumer
+		 */
 		Consumer[] tabCons = new Consumer[nCons];
 		Producer[] tabProd = new Producer[nProd];
 
@@ -40,8 +46,12 @@ public class TestProdCons {
 		for (int i = 0; i < nProd; i++) {
 			tabProd[i] = new Producer(pcb, minProd, maxProd, prodTime, i);
 		}
-		int startCons = 0;
-		int startProd = 0;
+		/*
+		 * on run les thread aléatoirement
+		 */
+		
+		int startCons = 0; //nb producer run
+		int startProd = 0; //nb consumer run
 		long startTime = System.nanoTime();
 		while (true) {
 			if ((startCons < nCons) && (startProd < nProd)) {
@@ -58,17 +68,32 @@ public class TestProdCons {
 				break;
 			}
 		}
+		/*
+		 * on attend que les producer ont crée tout leur message
+		 */
 		for (int i = 0; i < nProd; i++) {
 			tabProd[i].join();
 		}
+		/*
+		 * tant qu'il reste des messages a traiter dans le buffer, on attent que les messages soient consommés
+		 */
 		while (pcb.nmsg() > 0) {
 			Thread.sleep(10);
 		}
-		Thread.sleep(nGet*consTime); // Laisse le temps au consommateur de consommer le message
+		/*
+		 * Lors que le dernier message est lu dans le buffer, on attend que le consummer qui l'a lu finisse le traitement
+		 */
+		Thread.sleep(nGet*consTime); 
 		long endTime = System.nanoTime();
+		/*
+		 * on arrete les consummers
+		 */
 		for (int i = 0; i < nCons; i++) {
 			tabCons[i].interrupt();
 		}
+		/*
+		 * Affichage final avec le sperfommances
+		 */
 		System.out.println("Tous les messages ont été transmis");
 		System.out.println("Nombre de messages traités = " + pcb.totmsg());
 		System.out.println("Nombre d'id alloués traités = " + AllocId.nbAlloc());
