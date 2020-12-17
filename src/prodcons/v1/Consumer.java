@@ -1,7 +1,8 @@
 package prodcons.v1;
 
-import utils.Message;
-
+/*
+ * Classe consumer
+ */
 public class Consumer extends Thread{
 	
 	ProdConsBuffer pcb;
@@ -12,14 +13,15 @@ public class Consumer extends Thread{
 		this.consTime = consTime;
 	}
 
-	public Message consume() throws InterruptedException {
-		return pcb.get();
-	}
-	
+
+	/*
+	 * Le consumer, jusqu'a son interuption, va lire un message dans le ProdConsBuffer 
+	 * et va le lire lire (methode compute de message)
+	 */
 	public void run() {
 		try {
 			while (true) {
-				consume().compute();				
+				pcb.get().compute();				
 				sleep(consTime);
 			}
 		} catch (InterruptedException e) {

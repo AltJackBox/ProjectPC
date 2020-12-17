@@ -5,10 +5,22 @@ import utils.Message;
 
 public class ProdConsBuffer implements IProdConsBuffer {
 
+	/*
+	 * taille du buffer
+	 */
 	private int bufferSz;
 	private Message buffer[];
-	private int in, out;
+	/*
+	 * indice de position de lecture et d'écriture dans le buffer
+	 */
+	private int in, out; 
+	/*
+	 * nombre de message actuel dans le buffer
+	 */
 	private int nmess;
+	/*
+	 * nombre de message totale écrit dans le buffer
+	 */
 	private int total;
 
 	public ProdConsBuffer(int bufferSz) {
@@ -23,6 +35,9 @@ public class ProdConsBuffer implements IProdConsBuffer {
 	@Override
 	public synchronized void put(Message m) throws InterruptedException {
 		while (nmess >= bufferSz) {
+			/*
+			 * si le buffer est plein, on attend
+			 */
 			wait();
 		}
 		buffer[in] = m;
@@ -30,18 +45,27 @@ public class ProdConsBuffer implements IProdConsBuffer {
 		in %= bufferSz;
 		total++;
 		nmess++;
+		/*
+		 * on notify tout le monde, producer et consummer, qu'un message a été écrit
+		 */
 		notifyAll();
 	}
 
 	@Override
 	public synchronized Message get() throws InterruptedException {
 		while (nmess <= 0) {
+			/*
+			 * si le buffer est vide, on attend
+			 */
 			wait();
 		}
 		Message m = buffer[out];
 		out += 1;
 		out %= bufferSz;
 		nmess--;
+		/*
+		 * on notify tout le monde, producer et consummer, qu'un message a été lu
+		 */
 		notifyAll();
 		return m;
 	}

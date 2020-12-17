@@ -2,21 +2,47 @@ package prodcons.v2;
 
 import java.util.concurrent.Semaphore;
 
-
 import utils.IProdConsBuffer;
 
 import utils.Message;
 
 public class ProdConsBuffer implements IProdConsBuffer {
-
+	/*
+	 * taille du buffer
+	 */
 	private int bufferSz;
 	private Message buffer[];
+	/*
+	 * indice de position de lecture et d'écriture dans le buffer
+	 */
 	private int in, out;
+	/*
+	 * nombre de message actuel dans le buffer
+	 */
 	private int nmess;
+	/*
+	 * nombre de message totale écrit dans le buffer
+	 */
 	private int total;
+
+	/*
+	 * Semaphore pour gère l'accès aux buffer pour les consumers,
+	 * 1 seul lit le buffer à la fois
+	 */
 	private Semaphore mget;
+	/*
+	 * Semaphore pour gère l'accès aux buffer pour les producer,
+	 * 1 seul ecrit dans le buffer à la fois
+	 */
 	private Semaphore mput;
+	
+	/*
+	 * Semaphore qui met en attente les poducer si le buffer est plein
+	 */
 	private Semaphore wput;
+	/*
+	 * Semaphore qui met en attente les consumer si le buffer est vide
+	 */
 	private Semaphore wget;
 
 	public ProdConsBuffer(int bufferSz) {
@@ -35,8 +61,11 @@ public class ProdConsBuffer implements IProdConsBuffer {
 	@Override
 	public void put(Message m) throws InterruptedException {
 		try {
-			mput.acquire();
+			mput.acquire(); // le producer acquire la ressource
 			while (nmess >= bufferSz) {
+				/*
+				 * Si le buffer est plein, il libère la ressources et se met en attente
+				 */
 				mput.release();
 				wput.acquire();
 				mput.acquire();
@@ -46,8 +75,14 @@ public class ProdConsBuffer implements IProdConsBuffer {
 			in %= bufferSz;
 			total++;
 			nmess++;
+			/*
+			 * Après avoir produit le message, il release un consumer qui a été mis en attente car le buffer était vide.
+			 */
 			wget.release();
 		} finally {
+			/*
+			 * Puis le producer libère la ressource
+			 */
 			mput.release();
 		}
 	}
@@ -56,8 +91,11 @@ public class ProdConsBuffer implements IProdConsBuffer {
 	public Message get() throws InterruptedException {
 		Message m;
 		try {
-			mget.acquire();
+			mget.acquire();// le consumer acquire la ressource
 			while (nmess <= 0) {
+				/*
+				 * Si le buffer est vide, il libère la ressources et se met en attente
+				 */
 				mget.release();
 				wget.acquire();
 				mget.acquire();
@@ -66,8 +104,14 @@ public class ProdConsBuffer implements IProdConsBuffer {
 			out += 1;
 			out %= bufferSz;
 			nmess--;
+			/*
+			 * Après avoir lut un message, il release un pducer qui a été mis en attente car le buffer était plein.
+			 */
 			wput.release();
 		} finally {
+			/*
+			 * Puis le consumer libère la ressource
+			 */
 			mget.release();
 		}
 		return m;
@@ -92,7 +136,7 @@ public class ProdConsBuffer implements IProdConsBuffer {
 	@Override
 	public void put(Message m, int n) throws InterruptedException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }
